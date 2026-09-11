@@ -1,0 +1,22 @@
+# Never commit real queries, credentials, or result data.
+# The tool takes all three as runtime inputs; none of them belong in git.
+
+# Connection strings
+.env
+.env.local
+*.dsn
+
+# Real queries pulled in for comparison
+queries/
+*.local.sql
+
+# Comparison output
+out/
+*.diff.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
