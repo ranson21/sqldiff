@@ -104,6 +104,59 @@ git remote set-url --push origin no_push
 
 Git will then refuse any push from that clone.
 
+## Digesting a query before you ask about it
+
+`sqldiff` verifies a change. `sqldiff.digest` is the other half: it summarises a
+query *structurally* so an assistant reads a digest instead of the whole thing.
+
+```
+python3 -m sqldiff.digest big_report.sql
+```
+
+On a 1012-line report query that is **14,478 tokens reduced to 586 — 96%
+smaller**, while keeping what you actually need to reason about: base tables,
+the CTE dependency graph, every join with its keys, output columns, filters,
+and a short list of structural risks.
+
+The risk flags are heuristics pointing at where to look, not verdicts. They
+catch the things that are easy to miss in a long query:
+
+- a join on an **inequality** rather than an equality — every left row can match many right rows
+- aggregates computed over joined rows, which are summing duplicates if any join is 1:N
+- `NOT IN`, which returns nothing at all if the subquery yields a single NULL
+- `DISTINCT` alongside joins, which is sometimes a patch over fan-out rather than intent
+
+Two other modes:
+
+```
+# Where does this output column actually come from?
+python3 -m sqldiff.digest report.sql --lineage gross_revenue
+#   - gross_revenue
+#     - rr.gross_revenue
+#       - combined.total
+#         - ob.total
+#           - o.total
+
+# What structurally changed between two versions?
+python3 -m sqldiff.digest before.sql --diff after.sql
+#   6 structural edits (20 nodes unchanged)
+#   - Insert   JOIN order_items AS i ON i.order_id = o.id
+```
+
+That last one is the cheapest way to get an opinion on a rewrite: hand over the
+edit list, not both queries.
+
+### Installing sqlglot
+
+The digest needs [sqlglot](https://github.com/tobymao/sqlglot); the row
+comparison does not. On modern distributions PEP 668 blocks a system-wide
+`pip install`, so use a virtualenv:
+
+```
+python3 -m venv .venv && .venv/bin/pip install sqlglot
+.venv/bin/python -m sqldiff.digest big_report.sql
+```
+
 ## Companion tooling
 
 `sqldiff` is the *verify* step of a wider loop. The extract and decide steps
