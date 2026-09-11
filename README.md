@@ -43,7 +43,7 @@ No dependencies. Python 3.8+, and either `psql` on your PATH or `psycopg`
 installed — it detects which is available and uses it.
 
 ```
-git clone <your-fork> && cd sqldiff
+git clone https://github.com/ranson21/sqldiff.git && cd sqldiff
 python3 -m sqldiff.cli --help
 ```
 
@@ -103,6 +103,25 @@ git remote set-url --push origin no_push
 ```
 
 Git will then refuse any push from that clone.
+
+## Companion tooling
+
+`sqldiff` is the *verify* step of a wider loop. The extract and decide steps
+have their own tools, and getting them right is what keeps an AI assistant's
+context — and therefore its cost — small.
+
+The short version: assistant credits are spent on **input**, not answers. A
+1000-line query is ~12k tokens and an agent loop re-reads it every turn. So
+never paste a file, paste a digest — and generate that digest with a parser,
+which is free, exact, and cannot hallucinate.
+
+The highest-value single install is [sqlglot](https://github.com/tobymao/sqlglot):
+it gives you column-level lineage and a *structural* diff between two query
+versions, so you can hand over an edit list instead of two full queries.
+
+See **[docs/TOOLING.md](docs/TOOLING.md)** for the full set — SQL, Java, and
+cross-cutting — including install routes for locked-down machines and a note on
+which tools send data off-machine.
 
 ## Limitations
 
